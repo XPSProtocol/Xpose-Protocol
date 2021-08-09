@@ -1,0 +1,18 @@
+{
+  "scripts": {
+    "compile": "truffle compile",
+    "deploy": "truffle migrate --network testnet && truffle run verify XPSToken --network testnet",
+    "deployReal": "truffle migrate --network real && truffle run verify XPSToken --network real"
+  },
+  "devDependencies": {
+    "truffle-plugin-verify": "^0.5.8"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "4.2.0",
+    "@pancakeswap2/pancake-swap-core": "^0.1.0",
+    "@truffle/hdwallet-provider": "^1.4.0",
+    "bip39": "^3.0.4",
+    "ethereumjs-wallet": "^1.0.1",
+    "pancakeswap-peripheral": "^1.1.0-beta.0"
+  }
+}
