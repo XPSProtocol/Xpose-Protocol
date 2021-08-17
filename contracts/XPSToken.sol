@@ -205,24 +205,26 @@ contract XPSToken is Context, IERC20, Ownable {
         _timeToReleaseSecondStep = block.timestamp + 365 days;
         // set tokenOwnerAddress as owner of initial supply, more tokens can be minted later
         _mint(_msgSender(), initialSupply.sub((initialSupply.mul(_percentFromSupplyForTeam)).div(100)));
-
-        emit Transfer(address(0), _msgSender(), initialSupply);
+        // commented statement below because _mint is emitting Transfer event already
+        // emit Transfer(address(0), _msgSender(), initialSupply);
     }
 
     function releaseTeamFirstStep() external {
         require(block.timestamp >= _timeToReleaseFirstStep, "It's not time yet");
 
         uint256 releaseAmount = (_lockedTokensForTeam.mul(_percentReleaseFirstStep)).div(100);
-        _mint(address(0), releaseAmount);
-        emit Transfer(address(0), _teamWallet, releaseAmount);
+        _mint(_teamWallet, releaseAmount);
+        // commented statement below because _mint is emitting Transfer event already
+        // emit Transfer(address(0), _teamWallet, releaseAmount);
     }
 
     function releaseTeamSecondStep() external {
         require(block.timestamp >= _timeToReleaseSecondStep, "It's not time yet");
 
         uint256 releaseAmount = (_lockedTokensForTeam.mul(_percentReleaseSecondStep)).div(100);
-        _mint(address(0), releaseAmount);
-        emit Transfer(address(0), _teamWallet, releaseAmount);
+        _mint(_teamWallet, releaseAmount);
+        // commented statement below because _mint is emitting Transfer event already
+        // emit Transfer(address(0), _teamWallet, releaseAmount);
     }
 
     // Vote methods
