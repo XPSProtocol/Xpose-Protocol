@@ -8,22 +8,22 @@ The contract used some of libraries and interfaces of openzeppelin.
 
 ### There are some fixed fees apply on each transfer
 
-- Liquidity Pool Fee - 30%
+- Liquidity Pool Fee - 50%
 - Marketing Pool Fee - 40%
-- Burn Pool Fee - 10%
-- Community Reward Pool Fee - 20%
+- Burn Pool Fee - 5%
+- Community Reward Pool Fee - 5%
 
 ### Main fees
-- Common fee - default 1% (can be updated by multisig wallet)
-- Special fee - default 5% (can be updated by multisig wallet)
+- Common fee - default 5% (can be updated by multisig wallet)
+- Special fee - default 10% (can be updated by multisig wallet)
 
 ### Some default settings
 - Supply for team from initial supply - 15%
 - Release first step - 60%
 - Release second step - 40%
-- Liquidity trigger amount - 5000 tokens
-- Marketing trigger amount - 5000 tokens
-- Community trigger amount - 5000 tokens
+- Liquidity trigger amount - 500000 tokens
+- Marketing trigger amount - 500000 tokens
+- Community trigger amount - 500000 tokens
 
 ### Deployer/Owner can set below things while deploy
 - Name
