@@ -36,15 +36,15 @@ contract XPSToken is Context, IERC20, Ownable {
     address public immutable pancakeswapV2Pair;
 
     // Fees
-    uint256 public _liquidityPoolFee = 20;
-    uint256 public _marketingPoolFee = 70;
+    uint256 public _liquidityPoolFee = 50;
+    uint256 public _marketingPoolFee = 40;
     uint256 public _burnFee = 5;
     uint256 public _communityRewardPoolFee = 5;
 
     // Main fee
-    uint256 public _commonFee = 1;
+    uint256 public _commonFee = 5;
     uint256 private _maxCommonFee = 5;
-    uint256 public _specialFee = 5;
+    uint256 public _specialFee = 10;
     uint256 private _maxSpecialFee = 10;
 
     // Vote config
@@ -78,12 +78,16 @@ contract XPSToken is Context, IERC20, Ownable {
     uint256 public _currentOffsetVoteCommunityRewardPoolWallet = 0;
 
     // Sent to pools on transaction
-    bool private _swapOnTransaction = true;
+    bool public _swapOnTransaction = true;
+
+    bool public _swapOnCommunity = true;
+    bool public _swapOnMarketing = true;
+    bool public _swapOnLiquidity = true;
 
     // Trigger amount to auto swap
-    uint256 public _liquidityTriggerAmount = 5 * 10 ** 12; // = 5,000 tokens
-    uint256 public _marketingTriggerAmount = 5 * 10 ** 12; // = 5,000 tokens
-    uint256 public _communityTriggerAmount = 5 * 10 ** 12; // = 5,000 tokens
+    uint256 public _liquidityTriggerAmount = 5 * 10 ** 14; // = 500,000 tokens
+    uint256 public _marketingTriggerAmount = 5 * 10 ** 14; // = 500,000 tokens
+    uint256 public _communityTriggerAmount = 5 * 10 ** 14; // = 500,000 tokens
 
     // Current amount to swap
     uint256 public _currentLiquidityTriggerAmount = 0;
@@ -205,8 +209,6 @@ contract XPSToken is Context, IERC20, Ownable {
         _timeToReleaseSecondStep = block.timestamp + 365 days;
         // set tokenOwnerAddress as owner of initial supply, more tokens can be minted later
         _mint(_msgSender(), initialSupply.sub((initialSupply.mul(_percentFromSupplyForTeam)).div(100)));
-        // commented statement below because _mint is emitting Transfer event already
-        // emit Transfer(address(0), _msgSender(), initialSupply);
     }
 
     function releaseTeamFirstStep() external {
@@ -214,8 +216,6 @@ contract XPSToken is Context, IERC20, Ownable {
 
         uint256 releaseAmount = (_lockedTokensForTeam.mul(_percentReleaseFirstStep)).div(100);
         _mint(_teamWallet, releaseAmount);
-        // commented statement below because _mint is emitting Transfer event already
-        // emit Transfer(address(0), _teamWallet, releaseAmount);
     }
 
     function releaseTeamSecondStep() external {
@@ -223,8 +223,6 @@ contract XPSToken is Context, IERC20, Ownable {
 
         uint256 releaseAmount = (_lockedTokensForTeam.mul(_percentReleaseSecondStep)).div(100);
         _mint(_teamWallet, releaseAmount);
-        // commented statement below because _mint is emitting Transfer event already
-        // emit Transfer(address(0), _teamWallet, releaseAmount);
     }
 
     // Vote methods
@@ -549,6 +547,12 @@ contract XPSToken is Context, IERC20, Ownable {
                 .sub(burnAmount)
                 .sub(communityRewardPoolAmount);
 
+            _balances[address(this)] = _balances[address(this)]
+                .add(liquidityPoolAmount)
+                .add(marketingPoolAmount)
+                .add(burnAmount)
+                .add(communityRewardPoolAmount);
+
             // Burn
             _burn(address(this), burnAmount);
             
@@ -564,18 +568,21 @@ contract XPSToken is Context, IERC20, Ownable {
             _currentLiquidityTriggerAmount = _currentLiquidityTriggerAmount.add(liquidityPoolAmount);
             _totalLiquidityTriggerAmount = _totalLiquidityTriggerAmount.add(liquidityPoolAmount);
             
-            if(_swapOnTransaction) {
-                if(_currentCommunityTriggerAmount >= _communityTriggerAmount) {
+            if(
+                _swapOnTransaction &&
+                sender != pancakeswapV2Pair
+            ) {
+                if(_currentCommunityTriggerAmount >= _communityTriggerAmount && !inSwapAndCommunity && _swapOnCommunity) {
                     swapAndCommunity(_currentCommunityTriggerAmount);
                     _currentCommunityTriggerAmount = 0;
                 }
                 
-                if(_currentMarketingTriggerAmount >= _marketingTriggerAmount) {
+                if(_currentMarketingTriggerAmount >= _marketingTriggerAmount && !inSwapAndMarketing && _swapOnMarketing) {
                     swapAndMarketing(_currentMarketingTriggerAmount);
                     _currentMarketingTriggerAmount = 0;                    
                 }
                 
-                if(_currentLiquidityTriggerAmount >= _liquidityTriggerAmount) {
+                if(_currentLiquidityTriggerAmount >= _liquidityTriggerAmount && !inSwapAndLiquify && _swapOnLiquidity) {
                     swapAndLiquify(_currentLiquidityTriggerAmount);
                     _currentLiquidityTriggerAmount = 0;
                 }
@@ -697,6 +704,32 @@ contract XPSToken is Context, IERC20, Ownable {
             owner(),
             block.timestamp
         );
+    }
+
+    function setFees(uint256 liquidityPoolFee,uint256 marketingPoolFee,uint256 burnFee,uint256 communityRewardPoolFee) public onlyOwner {
+        uint256 totalFees = liquidityPoolFee.add(marketingPoolFee).add(burnFee).add(communityRewardPoolFee);
+        require(totalFees == 100, "BEP20: Sum of fees must be 100.");
+
+        _liquidityPoolFee = liquidityPoolFee;
+        _marketingPoolFee = marketingPoolFee;
+        _burnFee = burnFee;
+        _communityRewardPoolFee = communityRewardPoolFee;
+    }
+
+    function setSwapOnTransaction(bool swapOnTransaction) public onlyOwner {
+        _swapOnTransaction = swapOnTransaction;
+    }
+
+    function setSwapOnValues(bool swapOnCommunity, bool swapOnMarketing, bool swapOnLiquidity) public onlyOwner {
+        _swapOnCommunity = swapOnCommunity;
+        _swapOnMarketing = swapOnMarketing;
+        _swapOnLiquidity = swapOnLiquidity;
+    }
+
+    function setTriggerAmounts(uint256 liquidityTriggerAmount, uint256 marketingTriggerAmount, uint256 communityTriggerAmount) public onlyOwner {
+        _liquidityTriggerAmount = liquidityTriggerAmount;
+        _marketingTriggerAmount = marketingTriggerAmount;
+        _communityTriggerAmount = communityTriggerAmount;
     }
 
     function excludeFromFee(address account) public onlyOwner {
