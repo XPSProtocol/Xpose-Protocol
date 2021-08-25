@@ -17,7 +17,7 @@ import "pancakeswap-peripheral/contracts/interfaces/IPancakeRouter02.sol";
  * For full specification of ERC-20 standard see:
  * https://github.com/ethereum/EIPs/blob/master/EIPS/eip-20.md
  */
-contract XPSToken is Context, IERC20, Ownable {
+contract XposeProtocol is Context, IERC20, Ownable {
     using SafeMath for uint256;
 
     address public immutable WETH;
