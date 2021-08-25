@@ -1,6 +1,6 @@
-# XPS Token Contract
+# XposeProtocol Contract
 
-The XPS token is a BEP20 token. The token will have a fixed supply and each token is divisible up to fixed decimal places.
+The XP token is a BEP20 token. The token will have a fixed supply and each token is divisible up to fixed decimal places.
 
 The contract used some of libraries and interfaces of openzeppelin.
 
@@ -97,7 +97,7 @@ Change the addresses within the contract to the ones you want
 
 ```javascript
 truffle migrate --network <network name>
-truffle run verify XPStoken --network <network name>
+truffle run verify XposeProtocol --network <network name>
 ```
 Create a liquidity pool
 
